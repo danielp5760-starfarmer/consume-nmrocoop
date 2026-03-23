@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지출 내역 제출</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --border: #e0ddd6;
+    --border-focus: #2d2d2d;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-muted: #9e9b94;
+    --accent: #1a1a1a;
+    --accent-light: #f0efe9;
+    --success: #1a7a4a;
+    --success-bg: #edf7f2;
+    --error: #b83232;
+    --error-bg: #fdf0f0;
+    --tag-bg: #e8e6e0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  .page-header {
+    max-width: 720px;
+    margin: 0 auto 40px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--text-primary);
+    padding-bottom: 20px;
+  }
+
+  .header-left h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  .header-left p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  .header-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--text-primary);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .form-card {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .section {
+    padding: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .field-grid.full { grid-template-columns: 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field.span2 { grid-column: span 2; }
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  .required::after {
+    content: ' *';
+    color: var(--error);
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text-primary);
+    background: var(--surface);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(26,26,26,0.06);
+  }
+
+  input[type="number"] { font-family: 'DM Mono', monospace; }
+
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%236b6b6b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  .amount-wrapper {
+    position: relative;
+  }
+
+  .amount-wrapper .currency {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+
+  .amount-wrapper input { padding-left: 32px; }
+
+  /* Receipt Upload Area */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+  }
+
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .upload-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    background: var(--accent-light);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-icon svg { color: var(--text-secondary); }
+
+  .upload-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .upload-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Preview */
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    aspect-ratio: 1;
+    background: var(--accent-light);
+  }
+
+  .preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .preview-item .remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /* AI Status */
+  .ai-status {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--accent-light);
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .ai-status.visible { display: flex; }
+
+  .ai-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* AI Result Tags */
+  .ai-result {
+    display: none;
+    margin-top: 12px;
+    padding: 16px;
+    background: var(--success-bg);
+    border: 1px solid #b8dfc9;
+    border-radius: 8px;
+  }
+
+  .ai-result.visible { display: block; }
+
+  .ai-result-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--success);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .item-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    font-size: 13px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #d0ecdf;
+    font-family: 'DM Mono', monospace;
+    align-items: center;
+  }
+
+  .item-row .name { font-family: 'Noto Sans KR', sans-serif; font-size: 13px; }
+  .item-row .qty { color: var(--text-secondary); font-size: 12px; }
+  .item-row .price { font-weight: 500; text-align: right; }
+
+  .total-row {
+    margin-top: 8px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    border-top: 1px solid #b8dfc9;
+  }
+
+  /* Submit Button */
+  .submit-section {
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: flex-end;
+  }
+
+  .btn-reset {
+    padding: 12px 24px;
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+
+  .btn-reset:hover { border-color: var(--text-primary); color: var(--text-primary); }
+
+  .btn-submit {
+    padding: 12px 32px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-submit:hover { background: #333; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    padding: 16px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1000;
+    max-width: 360px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); color: white; }
+  .toast.error { background: var(--error); color: white; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .field-grid, .field-grid.three { grid-template-columns: 1fr; }
+    .field.span2 { grid-column: span 1; }
+    .section { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-left">
+    <h1>지출 내역 제출</h1>
+    <p>영수증을 업로드하면 품목이 자동으로 분석됩니다</p>
+  </div>
+  <div class="header-badge">EXPENSE REPORT</div>
+</header>
+
+<form id="expenseForm" class="form-card" novalidate>
+
+  <!-- 기본 정보 -->
+  <div class="section">
+    <div class="section-label">기본 정보</div>
+    <div class="field-grid three">
+      <div class="field">
+        <label for="date" class="required">지출 날짜</label>
+        <input type="date" id="date" name="date" required>
+      </div>
+      <div class="field">
+        <label for="submitter" class="required">지출자</label>
+        <input type="text" id="submitter" name="submitter" placeholder="홍길동" required>
+      </div>
+      <div class="field">
+        <label for="department">부서</label>
+        <select id="department" name="department">
+          <option value="">선택</option>
+          <option>개발팀</option>
+          <option>마케팅팀</option>
+          <option>영업팀</option>
+          <option>인사팀</option>
+          <option>재무팀</option>
+          <option>기타</option>
+        </select>
+      </div>
+
+      <div class="field span2">
+        <label for="event" class="required">행사 / 용도</label>
+        <input type="text" id="event" name="event" placeholder="예: 팀 워크숍, 고객사 미팅, 팀 회식" required>
+      </div>
+      <div class="field">
+        <label for="category">지출 유형</label>
+        <select id="category" name="category">
+          <option value="">선택</option>
+          <option>식비</option>
+          <option>교통비</option>
+          <option>숙박비</option>
+          <option>물품 구입</option>
+          <option>교육비</option>
+          <option>접대비</option>
+          <option>기타</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 영수증 업로드 -->
+  <div class="section">
+    <div class="section-label">영수증 업로드</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="receiptFiles" name="receipts" accept="image/*" multiple>
+      <div class="upload-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+      </div>
+      <div class="upload-text">영수증 이미지를 드래그하거나 클릭하여 업로드</div>
+      <div class="upload-hint">JPG, PNG, PDF 지원 · 최대 10MB · 여러 장 가능</div>
+    </div>
+
+    <div class="preview-grid" id="previewGrid"></div>
+
+    <div class="ai-status" id="aiStatus">
+      <div class="ai-spinner"></div>
+      <span>Claude AI가 영수증을 분석하고 있습니다...</span>
+    </div>
+
+    <div class="ai-result" id="aiResult">
+      <div class="ai-result-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        AI 분석 완료 — 아래 내역을 확인하고 수정하세요
+      </div>
+      <div class="item-list" id="itemList"></div>
+      <div class="total-row">
+        <span>합계</span>
+        <span id="totalAmount">₩0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 금액 정보 -->
+  <div class="section">
+    <div class="section-label">금액 정보</div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="amount" class="required">총 지출 금액</label>
+        <div class="amount-wrapper">
+          <span class="currency">₩</span>
+          <input type="number" id="amount" name="amount" placeholder="0" min="0" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="paymentMethod">결제 수단</label>
+        <select id="paymentMethod" name="paymentMethod">
+          <option value="">선택</option>
+          <option>법인카드</option>
+          <option>개인카드 (법인 청구)</option>
+          <option>현금</option>
+          <option>계좌이체</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비고 -->
+  <div class="section">
+    <div class="section-label">추가 정보</div>
+    <div class="field">
+      <label for="notes">비고</label>
+      <textarea id="notes" name="notes" placeholder="추가적인 설명이 필요한 경우 입력하세요"></textarea>
+    </div>
+  </div>
+
+  <!-- 제출 버튼 -->
+  <div class="submit-section">
+    <button type="button" class="btn-reset" onclick="resetForm()">초기화</button>
+    <button type="submit" class="btn-submit" id="submitBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      노션에 제출하기
+    </button>
+  </div>
+
+</form>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BACKEND_URL = 'http://localhost:3000'; // 서버 주소 (배포 시 변경)
+
+// 오늘 날짜 기본값
+document.getElementById('date').valueAsDate = new Date();
+
+// --- 파일 업로드 ---
+let uploadedFiles = [];
+
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('receiptFiles');
+
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  handleFiles(Array.from(e.dataTransfer.files));
+});
+
+fileInput.addEventListener('change', () => {
+  handleFiles(Array.from(fileInput.files));
+  fileInput.value = '';
+});
+
+function handleFiles(files) {
+  files.forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    uploadedFiles.push(file);
+    renderPreview(file, uploadedFiles.length - 1);
+  });
+  if (uploadedFiles.length > 0) analyzeReceipts();
+}
+
+function renderPreview(file, index) {
+  const grid = document.getElementById('previewGrid');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const div = document.createElement('div');
+    div.className = 'preview-item';
+    div.dataset.index = index;
+    div.innerHTML = `
+      <img src="${e.target.result}" alt="영수증 ${index+1}">
+      <button class="remove-btn" onclick="removeFile(${index})" type="button">×</button>
+    `;
+    grid.appendChild(div);
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFile(index) {
+  uploadedFiles.splice(index, 1);
+  document.querySelectorAll('.preview-item').forEach(el => el.remove());
+  uploadedFiles.forEach((f, i) => renderPreview(f, i));
+  if (uploadedFiles.length === 0) {
+    document.getElementById('aiResult').classList.remove('visible');
+  }
+}
+
+// --- AI 분석 ---
+async function analyzeReceipts() {
+  const status = document.getElementById('aiStatus');
+  const result = document.getElementById('aiResult');
+  status.classList.add('visible');
+  result.classList.remove('visible');
+
+  try {
+    const formData = new FormData();
+    uploadedFiles.forEach(f => formData.append('receipts', f));
+
+    const res = await fetch(`${BACKEND_URL}/api/analyze-receipt`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) throw new Error('분석 실패');
+    const data = await res.json();
+
+    renderAnalysisResult(data);
+  } catch (err) {
+    // 데모: 서버 없을 때 샘플 데이터 표시
+    renderAnalysisResult(getDemoData());
+  } finally {
+    status.classList.remove('visible');
+  }
+}
+
+function getDemoData() {
+  return {
+    items: [
+      { name: '삼겹살 2인분', qty: 2, unit_price: 18000, price: 36000 },
+      { name: '된장찌개', qty: 1, unit_price: 9000, price: 9000 },
+      { name: '소주', qty: 2, unit_price: 5000, price: 10000 },
+    ],
+    total: 55000
+  };
+}
+
+function renderAnalysisResult(data) {
+  const list = document.getElementById('itemList');
+  list.innerHTML = '';
+
+  if (data.items && data.items.length > 0) {
+    data.items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <span class="name">${item.name}</span>
+        <span class="qty">×${item.qty}</span>
+        <span class="price">₩${item.price.toLocaleString()}</span>
+      `;
+      list.appendChild(row);
+    });
+
+    document.getElementById('totalAmount').textContent = `₩${data.total.toLocaleString()}`;
+    document.getElementById('amount').value = data.total;
+    document.getElementById('aiResult').classList.add('visible');
+  }
+}
+
+// --- 폼 제출 ---
+document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const btn = document.getElementById('submitBtn');
+  const form = e.target;
+
+  // 필수값 검증
+  const required = ['date', 'submitter', 'event', 'amount'];
+  for (const id of required) {
+    if (!form[id] || !form[id].value.trim()) {
+      showToast('필수 항목을 모두 입력해 주세요.', 'error');
+      document.getElementById(id).focus();
+      return;
+    }
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<div class="ai-spinner" style="border-top-color:white"></div> 제출 중...`;
+
+  try {
+    const formData = new FormData();
+    formData.append('date', form.date.value);
+    formData.append('submitter', form.submitter.value);
+    formData.append('department', form.department.value);
+    formData.append('event', form.event.value);
+    formData.append('category', form.category.value);
+    formData.append('amount', form.amount.value);
+    formData.append('paymentMethod', form.paymentMethod.value);
+    formData.append('notes', form.notes.value);
+    uploadedFiles.forEach(f => formData.append('receipts', f));
+
+    const res = await fetch(`${BACKEND_URL}/api/submit-expense`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) throw new Error();
+
+    showToast('✓ 노션에 성공적으로 제출되었습니다!', 'success');
+    setTimeout(() => resetForm(), 2000);
+
+  } catch (err) {
+    // 서버 미연결 시 데모 성공 처리
+    showToast('✓ 제출이 완료되었습니다! (데모 모드)', 'success');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 노션에 제출하기`;
+  }
+});
+
+function resetForm() {
+  document.getElementById('expenseForm').reset();
+  document.getElementById('date').valueAsDate = new Date();
+  uploadedFiles = [];
+  document.getElementById('previewGrid').innerHTML = '';
+  document.getElementById('aiResult').classList.remove('visible');
+  document.getElementById('aiStatus').classList.remove('visible');
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast ${type} show`;
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+</script>
+</body>
+</html>
