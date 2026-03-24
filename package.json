@@ -1,0 +1,31 @@
+{
+  "name": "expense-project",
+  "version": "1.0.0",
+  "description": "``` project/ ├── expense-form.html   ← 직원 입력 웹페이지 ├── server.js           ← 백엔드 서버 ├── .env                ← API 키 설정 (직접 생성) ├── .env.example        ← 환경변수 예시 └── package.json        ← (npm init으로 생성) ```",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@notionhq/client": "^5.14.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "multer": "^2.1.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielp5760-starfarmer/consume-nmrocoop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/danielp5760-starfarmer/consume-nmrocoop/issues"
+  },
+  "homepage": "https://github.com/danielp5760-starfarmer/consume-nmrocoop#readme"
+}
