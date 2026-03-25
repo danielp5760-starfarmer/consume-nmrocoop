@@ -161,9 +161,9 @@ app.post('/api/submit-expense', upload.array('receipts', 10), async (req, res) =
     const totalAmount = parseInt(amount, 10) || analysisResult?.total || 0;
 
     // 품목 목록을 노션 rich_text 형태로 변환
-    const itemsText = items.length > 0
-      ? items.map(i => `${i.name} ×${i.qty} = ₩${i.price.toLocaleString()}`).join('\n')
-      : '(영수증 미첨부)';
+const itemsText = req.files && req.files.length > 0
+  ? '영수증 첨부됨'
+  : '영수증 없음';
 
     // 노션 DB에 페이지 생성
     // ⚠️ 아래 properties의 키 이름은 실제 노션 DB 컬럼명과 일치해야 합니다
