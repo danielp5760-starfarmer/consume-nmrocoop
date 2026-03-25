@@ -271,7 +271,7 @@ app.post('/api/submit-expense', upload.array('receipts', 10), async (req, res) =
 // ── 서버 시작 ──────────────────────────────────────────────
 app.use(express.static(__dirname));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`\n🚀 서버 실행 중: http://localhost:${PORT}`);
   console.log(`   Claude API: ${process.env.ANTHROPIC_API_KEY ? '✓ 연결됨' : '✗ ANTHROPIC_API_KEY 없음'}`);
