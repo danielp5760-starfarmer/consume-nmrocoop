@@ -14,12 +14,12 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
     "@notionhq/client": "^5.14.0",
+    "cloudinary": "^2.9.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "multer": "^2.1.1"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/danielp5760-starfarmer/consume-nmrocoop.git"
