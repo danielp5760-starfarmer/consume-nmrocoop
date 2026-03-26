@@ -686,18 +686,7 @@ document.getElementById('expenseForm').addEventListener('submit', async (e) => {
   return;
 }
 const required = ['date', 'submitter', 'event', 'amount'];
-```
 
----
-
-**3.** **"Commit changes"** 클릭
-
----
-
-이렇게 하면 영수증 없이 제출하면 아래 메시지가 뜨고 제출이 막힙니다:
-```
-영수증 이미지를 첨부해 주세요.
-  
   for (const id of required) {
     if (!form[id] || !form[id].value.trim()) {
       showToast('필수 항목을 모두 입력해 주세요.', 'error');
